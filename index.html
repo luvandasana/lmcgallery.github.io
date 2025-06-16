@@ -3,479 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LM Clothing Store</title>
-    <!-- Tailwind CSS CDN for styling -->
+    <title>LM Clothing Store - Men's Shirts</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons (checkmark) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for checkmark icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Custom styles for gold accents and font */
-        :root {
-            --gold: #FFD700; /* Gold color */
-            --black: #000000; /* Black color */
-            --dark-gray: #1a1a1a; /* Slightly lighter black for contrast */
-        }
+        /* Custom gold color for consistency */
+        .text-gold { color: #FFD700; }
+        .bg-gold { background-color: #FFD700; }
+        .border-gold { border-color: #FFD700; }
+
+        /* General body styling */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--black);
-            color: white;
+            background-color: #000; /* Black background */
+            color: #fff; /* White text for general content */
+            margin: 0;
+            padding: 0;
             overflow-x: hidden; /* Prevent horizontal scrolling */
         }
-        .text-gold {
-            color: var(--gold);
-        }
-        .bg-gold {
-            background-color: var(--gold);
-        }
-        .border-gold {
-            border-color: var(--gold);
-        }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
+
+        /* Scrollbar styles for aesthetics */
+        body::-webkit-scrollbar {
             width: 8px;
         }
-        ::-webkit-scrollbar-track {
-            background: var(--dark-gray);
-            border-radius: 10px;
+        body::-webkit-scrollbar-track {
+            background: #222;
         }
-        ::-webkit-scrollbar-thumb {
-            background: var(--gold);
+        body::-webkit-scrollbar-thumb {
+            background-color: #FFD700;
             border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #e6c200;
+            border: 2px solid #222;
         }
 
-        /* Styles for the image container and selection */
-        .image-card {
+        /* Magnified image modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.9); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain; /* Ensure the image fits within the modal */
+            border: 4px solid #FFD700; /* Gold frame for magnified image */
+            border-radius: 12px;
+        }
+
+        /* Close button for modal */
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #FFD700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Image container styles */
+        .image-container {
             position: relative;
             cursor: pointer;
+            overflow: hidden;
+            border-radius: 8px; /* Rounded corners for image containers */
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border: 2px solid transparent; /* Default transparent border */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
         }
-        .image-card.selected {
-            border-color: var(--gold); /* Gold border when selected */
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); /* Gold glow when selected */
-            transform: scale(1.03); /* Slight scale up when selected */
+
+        .image-container:hover {
+            transform: translateY(-5px); /* Lift effect on hover */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* More prominent shadow */
         }
-        .checkmark {
+
+        .image-container img {
+            width: 100%;
+            height: 250px; /* Fixed height for consistency in grid */
+            object-fit: cover; /* Cover the container */
+            border-radius: 8px;
+            border: 3px solid transparent; /* Start with transparent border */
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        .image-container.selected img {
+            border-color: #FFD700; /* Gold border when selected */
+        }
+
+        /* Checkmark icon for selected images */
+        .checkmark-icon {
             position: absolute;
             top: 8px;
             right: 8px;
-            background-color: var(--gold);
-            color: var(--black);
+            font-size: 24px;
+            color: #FFD700; /* Gold checkmark */
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
             border-radius: 50%;
             padding: 4px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            opacity: 0; /* Hidden by default */
-            transition: opacity 0.2s ease-in-out;
-        }
-        .image-card.selected .checkmark {
-            opacity: 1; /* Visible when selected */
+            display: none; /* Hidden by default */
         }
 
-        /* Magnify modal styles */
-        .magnify-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-        .magnify-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        .magnify-modal img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border: 4px solid var(--gold);
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-        }
-        .close-modal-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: var(--gold);
-            color: var(--black);
-            padding: 10px 15px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 60;
-            transition: background-color 0.2s;
-        }
-        .close-modal-btn:hover {
-            background-color: #e6c200; /* Darker gold on hover */
+        .image-container.selected .checkmark-icon {
+            display: block; /* Show when selected */
         }
 
         /* Floating download button */
-        .download-btn {
+        .download-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: var(--gold);
-            color: var(--black);
+            z-index: 999;
+            background-color: #FFD700; /* Gold background */
+            color: #000; /* Black text */
             padding: 15px 25px;
-            border-radius: 9999px; /* Fully rounded */
+            border-radius: 50px; /* Pill shape */
+            font-weight: bold;
             font-size: 1.1rem;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
-            transition: transform 0.2s, background-color 0.2s;
-            z-index: 40;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Shadow */
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            border: none;
             cursor: pointer;
-        }
-        .download-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            background-color: #e6c200;
-        }
-        .download-btn:active {
-            transform: translateY(0) scale(0.98);
+            border: none;
+            outline: none;
         }
 
-        /* Message box styles */
-        .message-box {
-            position: fixed;
-            bottom: 100px; /* Above the download button */
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            color: var(--gold);
-            padding: 15px 25px;
-            border-radius: 8px;
-            border: 2px solid var(--gold);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            z-index: 55; /* Higher than download button */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-            text-align: center;
+        .download-button:hover {
+            background-color: #e6c200; /* Slightly darker gold on hover */
+            transform: translateY(-3px); /* Lift effect */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
         }
-        .message-box.show {
-            opacity: 1;
-            visibility: visible;
+
+        .download-button:active {
+            transform: translateY(0); /* Press down effect */
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Ensure download button is hidden if no images are selected */
+        .download-button.hidden {
+            display: none;
+        }
+
+        /* Responsive adjustments for header */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header-content h1 {
+                font-size: 2.25rem; /* Adjust for mobile */
+            }
+            .header-content p {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen">
-
+<body class="selection:bg-gold selection:text-black">
     <!-- Header Section -->
-    <header class="bg-black text-white py-6 px-4 md:px-8 shadow-lg border-b-2 border-gold">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gold tracking-tight mb-2 md:mb-0">LM Clothing Store</h1>
-            <p class="text-lg md:text-xl text-gray-300 text-center md:text-right">
-                Thailand Complex Building at Kariakoo market<br>
-                Shop number 03, Mchikichi/Manyema St.
-            </p>
+    <header class="bg-black text-white py-8 px-6 sm:px-10 border-b border-gold shadow-lg">
+        <div class="header-content flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto">
+            <div class="text-center sm:text-left mb-4 sm:mb-0">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-gold leading-tight tracking-wide">
+                    LM Clothing Store
+                </h1>
+                <p class="text-lg sm:text-xl mt-2 text-gray-300">
+                    Your destination for premium men's shirts.
+                </p>
+            </div>
+            <div class="text-center sm:text-right text-gray-400 text-sm sm:text-base">
+                <p>Thailand Complex Building, Shop No. 03</p>
+                <p>Mchikichi/Manyema St., Kariakoo Market</p>
+                <p>Dar es Salaam, Tanzania</p>
+            </div>
         </div>
     </header>
 
     <!-- Main Content - Image Gallery -->
-    <main class="container mx-auto py-8 px-4 md:px-8">
-        <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 text-gold">Our Latest Collection</h2>
+    <main class="container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold text-gold mb-8 text-center">Our Latest Collection</h2>
 
-        <div id="image-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div id="image-gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <!-- Images will be dynamically loaded here by JavaScript -->
+            <!-- Example Placeholder Image Structure: -->
+            <!--
+            <div class="image-container group relative bg-gray-900 border border-gold rounded-lg shadow-md">
+                <img src="https://placehold.co/400x400/000/FFD700?text=Shirt+1" alt="Men's Shirt 1" class="w-full h-auto object-cover rounded-lg">
+                <i class="checkmark-icon fas fa-check-circle"></i>
+            </div>
+            -->
         </div>
     </main>
 
-    <!-- Magnify Modal -->
-    <div id="magnify-modal" class="magnify-modal">
-        <button id="close-modal-btn" class="close-modal-btn">&times;</button>
-        <img id="magnified-image" src="" alt="Magnified Image">
+    <!-- Magnified Image Modal -->
+    <div id="image-modal" class="modal">
+        <span class="close-button" id="close-modal">&times;</span>
+        <img class="modal-content" id="magnified-image" src="" alt="Magnified Image">
     </div>
 
     <!-- Floating Download Button -->
-    <button id="download-btn" class="download-btn">
-        <i class="fas fa-download"></i>
-        <span>Download Selected</span>
+    <button id="download-selected-button" class="download-button hidden">
+        <i class="fas fa-download"></i> Download Selected (<span id="selected-count">0</span>)
     </button>
 
-    <!-- Message Box -->
-    <div id="message-box" class="message-box"></div>
-
     <script>
-        // Array to store URLs of shirts. In a real application, these would come from a backend API or server.
-        // Using placehold.co for demonstration purposes to simulate hundreds of images.
-        const imagesData = [];
-        // Generate 100 placeholder images for demonstration
-        for (let i = 1; i <= 100; i++) {
-            imagesData.push({
-                id: `shirt-${i}`,
-                src: `image (${i}).jpeg`, // Dark background, gold text
-                alt: `Men's Shirt ${i}`
-            });
-        }
+        const imageGallery = document.getElementById('image-gallery');
+        const imageModal = document.getElementById('image-modal');
+        const magnifiedImage = document.getElementById('magnified-image');
+        const closeModalButton = document.getElementById('close-modal');
+        const downloadButton = document.getElementById('download-selected-button');
+        const selectedCountSpan = document.getElementById('selected-count');
 
-        // Keep track of selected image IDs
-        let selectedImages = new Set();
-        let longPressTimer; // Timer for detecting long press
+        let selectedImages = new Set(); // Stores URLs of selected images
+        let longPressTimer; // Timer for long press detection
         const LONG_PRESS_THRESHOLD = 500; // milliseconds
 
-        // Get DOM elements
-        const imageGallery = document.getElementById('image-gallery');
-        const magnifyModal = document.getElementById('magnify-modal');
-        const magnifiedImage = document.getElementById('magnified-image');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const downloadBtn = document.getElementById('download-btn');
-        const messageBox = document.getElementById('message-box');
+        // Generate placeholder images (replace with your actual image URLs in a real app)
+        const imageSources = Array.from({ length: 18 }, (_, i) => ({
+            id: `shirt-${i + 1}`,
+            src: `image (${i+1}).jpeg`,
+            alt: `Men's Shirt ${i + 1}`,
+            downloadName: `LM_Shirt_${i + 1}.png`
+        }));
 
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {number} duration - How long the message should be visible in milliseconds.
-         */
-        function showMessage(message, duration = 3000) {
-            messageBox.textContent = message;
-            messageBox.classList.add('show');
-            setTimeout(() => {
-                messageBox.classList.remove('show');
-            }, duration);
-        }
-
-        /**
-         * Renders all images into the gallery.
-         */
+        // Function to render images
         function renderImages() {
-            imageGallery.innerHTML = ''; // Clear existing content
-            imagesData.forEach(image => {
-                const imageCard = document.createElement('div');
-                imageCard.classList.add('image-card', 'relative', 'bg-dark-gray', 'p-2', 'rounded-lg', 'overflow-hidden', 'shadow-xl', 'hover:shadow-2xl');
-                imageCard.dataset.id = image.id; // Store image ID for selection
+            imageGallery.innerHTML = ''; // Clear existing images
+            imageSources.forEach(image => {
+                const imgContainer = document.createElement('div');
+                imgContainer.classList.add(
+                    'image-container', 'group', 'relative', 'bg-gray-900', 'border', 'border-gold', 'rounded-lg', 'shadow-md'
+                );
+                imgContainer.dataset.src = image.src; // Store full image source
+                imgContainer.dataset.downloadName = image.downloadName;
 
-                const img = document.createElement('img');
-                img.src = image.src;
-                img.alt = image.alt;
-                img.classList.add('w-full', 'h-auto', 'object-cover', 'rounded-md'); // Responsive image
+                // Check if this image was previously selected
+                if (selectedImages.has(image.src)) {
+                    imgContainer.classList.add('selected');
+                }
 
-                const checkmark = document.createElement('div');
-                checkmark.classList.add('checkmark', 'text-black', 'text-xl', 'p-2', 'rounded-full');
-                checkmark.innerHTML = '<i class="fas fa-check"></i>'; // Font Awesome checkmark icon
-
-                imageCard.appendChild(img);
-                imageCard.appendChild(checkmark);
-                imageGallery.appendChild(imageCard);
-
-                // Add event listeners for each image card
-                addCardEventListeners(imageCard);
+                imgContainer.innerHTML = `
+                    <img src="${image.src}" alt="${image.alt}" class="w-full h-auto object-cover rounded-lg">
+                    <i class="checkmark-icon fas fa-check-circle"></i>
+                `;
+                imageGallery.appendChild(imgContainer);
             });
+            updateDownloadButtonVisibility();
         }
 
-        /**
-         * Adds double-click (magnify) and long-press (select) event listeners to an image card.
-         * @param {HTMLElement} card - The image card DOM element.
-         */
-        function addCardEventListeners(card) {
-            let pressStartTime; // To track how long the touch/mouse is held
+        // --- Image Interaction Logic ---
 
-            // Common function to handle long press logic
-            const handleLongPress = () => {
-                clearTimeout(longPressTimer); // Clear any pending timer
-                longPressTimer = null; // Reset timer variable
-                toggleSelection(card.dataset.id);
-            };
+        // Magnify image on double click
+        imageGallery.addEventListener('dblclick', (event) => {
+            const container = event.target.closest('.image-container');
+            if (container) {
+                magnifiedImage.src = container.dataset.src;
+                imageModal.style.display = 'flex'; // Use flex for centering
+            }
+        });
 
-            // Common function to handle click logic (magnify)
-            const handleClick = () => {
-                magnifyImage(card.querySelector('img').src);
-            };
+        // Close magnified image modal
+        closeModalButton.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+        });
 
-            // --- Desktop Event Listeners ---
-            card.addEventListener('mousedown', (e) => {
-                if (e.button === 0) { // Left mouse button
-                    pressStartTime = Date.now();
-                    longPressTimer = setTimeout(handleLongPress, LONG_PRESS_THRESHOLD);
-                }
-            });
+        // Close modal when clicking outside the image
+        imageModal.addEventListener('click', (event) => {
+            if (event.target === imageModal) {
+                imageModal.style.display = 'none';
+            }
+        });
 
-            card.addEventListener('mouseup', () => {
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null; // Clear the timer if mouseup happens before long press threshold
-                    if (Date.now() - pressStartTime < LONG_PRESS_THRESHOLD) {
-                        // It was a short click, not a long press
-                        handleClick();
-                    }
-                }
-            });
+        // Toggle selection on long press/hold
+        imageGallery.addEventListener('mousedown', handlePressStart);
+        imageGallery.addEventListener('mouseup', handlePressEnd);
+        imageGallery.addEventListener('mouseleave', handlePressEnd); // Clear timer if mouse leaves element
+        imageGallery.addEventListener('touchstart', handlePressStart, { passive: true });
+        imageGallery.addEventListener('touchend', handlePressEnd);
+        imageGallery.addEventListener('touchcancel', handlePressEnd); // Clear timer if touch is cancelled
 
-            card.addEventListener('mouseleave', () => {
-                // If mouse leaves the element while holding down, clear timer
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-            });
+        function handlePressStart(event) {
+            const container = event.target.closest('.image-container');
+            if (!container) return;
 
-            // Fallback dblclick for older or less precise long-press detection on desktop
-            card.addEventListener('dblclick', () => {
-                // If dblclick, always magnify, override any pending long press.
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-                magnifyImage(card.querySelector('img').src);
-            });
+            // Clear any existing timer to prevent multiple selections
+            clearTimeout(longPressTimer);
 
-
-            // --- Mobile Event Listeners ---
-            card.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent default touch behavior like scrolling/zooming
-                pressStartTime = Date.now();
-                longPressTimer = setTimeout(handleLongPress, LONG_PRESS_THRESHOLD);
-            });
-
-            card.addEventListener('touchend', () => {
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null; // Clear the timer if touchend happens before long press threshold
-                    if (Date.now() - pressStartTime < LONG_PRESS_THRESHOLD) {
-                        // It was a short tap, not a long press
-                        handleClick();
-                    }
-                }
-            });
-
-            card.addEventListener('touchcancel', () => {
-                // If touch is interrupted (e.g., call, another app), clear timer
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-            });
+            longPressTimer = setTimeout(() => {
+                // This code runs if the press lasts longer than LONG_PRESS_THRESHOLD
+                toggleImageSelection(container);
+            }, LONG_PRESS_THRESHOLD);
         }
 
-        /**
-         * Toggles the selection state of an image.
-         * @param {string} imageId - The ID of the image to select/deselect.
-         */
-        function toggleSelection(imageId) {
-            const card = document.querySelector(`.image-card[data-id="${imageId}"]`);
-            if (!card) return;
+        function handlePressEnd(event) {
+            // This event fires for both short taps/clicks and end of long presses
+            clearTimeout(longPressTimer);
+            // Prevent default behavior to avoid triggering click after a short touch/hold
+            // Only if it was a touch event that didn't trigger long press
+            if (event.type === 'touchend' && !event.target.closest('.image-container').classList.contains('selected')) {
+                 // We don't want to prevent default for touchend after long press if it already did something.
+                 // This is a complex area for touch events. For simplicity, we'll let double-click handle magnify.
+            }
+        }
 
-            if (selectedImages.has(imageId)) {
-                selectedImages.delete(imageId);
-                card.classList.remove('selected');
+
+        // Function to toggle image selection
+        function toggleImageSelection(container) {
+            const imgSrc = container.dataset.src;
+            if (selectedImages.has(imgSrc)) {
+                selectedImages.delete(imgSrc);
+                container.classList.remove('selected');
             } else {
-                selectedImages.add(imageId);
-                card.classList.add('selected');
+                selectedImages.add(imgSrc);
+                container.classList.add('selected');
             }
             updateDownloadButtonVisibility();
         }
 
-        /**
-         * Shows the magnified image modal.
-         * @param {string} src - The source URL of the image to magnify.
-         */
-        function magnifyImage(src) {
-            magnifiedImage.src = src;
-            magnifyModal.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
-        }
-
-        /**
-         * Hides the magnified image modal.
-         */
-        function closeMagnifyModal() {
-            magnifyModal.classList.remove('show');
-            document.body.style.overflow = ''; // Restore scrolling
-            magnifiedImage.src = ''; // Clear image src
-        }
-
-        /**
-         * Updates the visibility of the download button based on selected images.
-         */
+        // Update the download button's visibility and count
         function updateDownloadButtonVisibility() {
-            if (selectedImages.size > 0) {
-                downloadBtn.style.display = 'flex'; // Show button
+            const count = selectedImages.size;
+            selectedCountSpan.textContent = count;
+            if (count > 0) {
+                downloadButton.classList.remove('hidden');
             } else {
-                downloadBtn.style.display = 'none'; // Hide button
+                downloadButton.classList.add('hidden');
             }
         }
 
-        /**
-         * Simulates downloading selected images. In a real application, this would
-         * trigger a server-side download or client-side zip creation.
-         */
-        function downloadSelectedImages() {
+        // --- Download Logic ---
+        downloadButton.addEventListener('click', async () => {
             if (selectedImages.size === 0) {
-                showMessage('Please select at least one image to download.');
+                console.log("No images selected for download.");
                 return;
             }
 
-            // Simulate download by listing URLs or opening in new tabs
-            let downloadMessage = `Initiating download for ${selectedImages.size} image(s):\n\n`;
-            let downloadedCount = 0;
+            // Create a temporary link element for downloading
+            const tempLink = document.createElement('a');
+            tempLink.style.display = 'none';
+            document.body.appendChild(tempLink);
 
-            selectedImages.forEach(imageId => {
-                const imageSrc = imagesData.find(img => img.id === imageId)?.src;
-                if (imageSrc) {
-                    // For a real download, you might open in a new tab or trigger a programmatic download
-                    // window.open(imageSrc, '_blank'); // Opens each image in a new tab
-                    downloadMessage += `- ${imageSrc}\n`;
-                    downloadedCount++;
+            for (const imageUrl of selectedImages) {
+                try {
+                    // Find the corresponding image data to get the download name
+                    const imageData = imageSources.find(img => img.src === imageUrl);
+                    const downloadFileName = imageData ? imageData.downloadName : `downloaded_image_${Date.now()}.png`;
+
+                    // Fetch the image as a Blob
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+
+                    // Create an object URL for the blob
+                    const objectURL = URL.createObjectURL(blob);
+
+                    tempLink.href = objectURL;
+                    tempLink.download = downloadFileName;
+                    tempLink.click(); // Programmatically click the link to trigger download
+
+                    URL.revokeObjectURL(objectURL); // Clean up the object URL
+                } catch (error) {
+                    console.error(`Failed to download image ${imageUrl}:`, error);
+                    // You could display a user-friendly error message here
                 }
-            });
-
-            if (downloadedCount > 0) {
-                showMessage(`Successfully initiated download for ${downloadedCount} image(s). Check your browser's download prompt or new tabs.`, 5000);
-            } else {
-                showMessage('No images found to download among selections.', 3000);
             }
 
-            clearSelection(); // Clear selection after simulated download
-        }
+            document.body.removeChild(tempLink); // Clean up the temporary link
 
-        /**
-         * Clears all selected images and their checkmarks.
-         */
-        function clearSelection() {
-            selectedImages.forEach(imageId => {
-                const card = document.querySelector(`.image-card[data-id="${imageId}"]`);
-                if (card) {
-                    card.classList.remove('selected');
-                }
-            });
+            // Clear selected images after download
             selectedImages.clear();
-            updateDownloadButtonVisibility();
-        }
-
-        // Event listeners for the modal and download button
-        closeModalBtn.addEventListener('click', closeMagnifyModal);
-        magnifyModal.addEventListener('click', (e) => {
-            // Close modal if clicking outside the image itself
-            if (e.target === magnifyModal) {
-                closeMagnifyModal();
-            }
-        });
-        downloadBtn.addEventListener('click', downloadSelectedImages);
-
-        // Initial setup on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            renderImages();
-            updateDownloadButtonVisibility(); // Hide button initially
+            renderImages(); // Re-render to update UI and remove checkmarks
         });
 
+        // Initial render of images when the page loads
+        window.onload = renderImages;
     </script>
 </body>
 </html>
