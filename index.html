@@ -308,7 +308,7 @@
                 const height = getRandomDimension();
                 // Simulating image names like "image (1).jpeg"
                 const imageName = `image (${i}).jpeg`;
-                const imageUrl = `image (${i}).jpeg`;
+                const imageUrl = `image%20(${i}).jpeg`;
                 const imageId = `img-${i}`;
 
                 // Store image data for later use (download/WhatsApp)
@@ -424,7 +424,7 @@
                 const imgData = imageData.get(imageId);
                 if (imgData) {
                     // Example link format: image (1).jpeg (1022x1280) - [link]
-                    message += `https://luvandasana.github.io/lmcgallery.github.io/'${imgData.url}'\n`;
+                    message += `https://luvandasana.github.io/lmcgallery.github.io/${imgData.url}\n`;
                 }
             });
 
