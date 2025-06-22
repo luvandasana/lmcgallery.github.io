@@ -264,7 +264,7 @@
     <!-- Floating Action Buttons -->
     <div class="fab-container">
         <button id="whatsapp-fab" class="fab" title="Send selected images via WhatsApp">
-            <i class="fab fa-whatsapp"></i>
+            <i class="fab fa-whatsapp"></i>	
         </button>
         <button id="download-fab" class="fab" title="Download selected images">
             <i class="fas fa-download"></i>
@@ -424,7 +424,7 @@
                 const imgData = imageData.get(imageId);
                 if (imgData) {
                     // Example link format: image (1).jpeg (1022x1280) - [link]
-                    message += `${index+1}:https://luvandasana.github.io/lmcgallery.github.io/${imgData.url}\n\n`;
+                    message += `https://luvandasana.github.io/lmcgallery.github.io/${imgData.url}\n\n`;
                 }
             });
 
@@ -433,7 +433,7 @@
 
             // Clear selections after sending
             clearSelections();
-            showMessageBox('Links sent via WhatsApp!');
+            showMessageBox('Sent via WhatsApp!');
         });
 
         // Function to clear all selected images
