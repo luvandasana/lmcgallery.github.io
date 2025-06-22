@@ -301,7 +301,7 @@
         // Function to simulate fetching hundreds of images
         function fetchImages() {
             const imageGrid = document.getElementById('image-grid');
-            const numberOfImages = 199; // Simulating hundreds of pictures
+            const numberOfImages = 100; // Simulating hundreds of pictures
 
             for (let i = 1; i <= numberOfImages; i++) {
                 const width = getRandomDimension();
@@ -424,7 +424,7 @@
                 const imgData = imageData.get(imageId);
                 if (imgData) {
                     // Example link format: image (1).jpeg (1022x1280) - [link]
-                    message += `https://luvandasana.github.io/lmcgallery.github.io/${imgData.url}\n`;
+                    message += `https://luvandasana.github.io/lmcgallery.github.io/'${imgData.url}'\n`;
                 }
             });
 
