@@ -6,51 +6,113 @@
     <title>LM Clothing Store - Men's Shirts</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for checkmark icon -->
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Custom gold color for consistency */
-        .text-gold { color: #FFD700; }
-        .bg-gold { background-color: #FFD700; }
-        .border-gold { border-color: #FFD700; }
+        /* Custom styles for gold theme and fonts */
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-gold: #FFD700;
+            --light-gold: #FFFACD;
+            --text-color: #e0e0e0;
+        }
 
-        /* General body styling */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000; /* Black background */
-            color: #fff; /* White text for general content */
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            background-color: var(--primary-black);
+            color: var(--text-color);
         }
 
-        /* Scrollbar styles for aesthetics */
-        body::-webkit-scrollbar {
-            width: 8px;
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 10px;
         }
-        body::-webkit-scrollbar-track {
-            background: #222;
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-black);
         }
-        body::-webkit-scrollbar-thumb {
-            background-color: #FFD700;
-            border-radius: 10px;
-            border: 2px solid #222;
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary-gold);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e6c200;
+        }
+
+        /* Gold frame effect */
+        .gold-frame {
+            border: 4px solid transparent; /* Initial transparent border */
+            background-clip: padding-box;
+            position: relative;
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Using pseudo-elements for a better gold border effect that doesn't affect layout */
+        .gold-frame::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 4px solid var(--secondary-gold);
+            border-radius: 12px; /* Match element's border-radius */
+            z-index: 0;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .gold-frame.selected::before {
+            opacity: 1; /* Visible when selected */
+        }
+
+        .gold-frame img {
+            position: relative;
+            z-index: 1; /* Ensure image is above pseudo-element border */
+        }
+
+        .selected-checkmark {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--secondary-gold);
+            color: var(--primary-black);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 10; /* Above image and frame */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+
+        .selected-checkmark.show {
+            opacity: 1;
+            transform: scale(1);
         }
 
         /* Magnified image modal */
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            z-index: 100; /* Sit on top */
             left: 0;
             top: 0;
             width: 100%; /* Full width */
             height: 100%; /* Full height */
             overflow: auto; /* Enable scroll if needed */
             background-color: rgba(0, 0, 0, 0.9); /* Black w/ opacity */
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px); /* Blur background */
         }
 
         .modal-content {
@@ -58,345 +120,339 @@
             display: block;
             max-width: 90%;
             max-height: 90%;
-            object-fit: contain; /* Ensure the image fits within the modal */
-            border: 4px solid #FFD700; /* Gold frame for magnified image */
             border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3); /* Gold shadow */
+            object-fit: contain; /* Ensure image fits without cropping */
         }
 
-        /* Close button for modal */
-        .close-button {
+        .modal-close {
             position: absolute;
-            top: 15px;
+            top: 20px;
             right: 35px;
-            color: #f1f1f1;
+            color: var(--secondary-gold);
             font-size: 40px;
             font-weight: bold;
             transition: 0.3s;
             cursor: pointer;
         }
 
-        .close-button:hover,
-        .close-button:focus {
-            color: #FFD700;
+        .modal-close:hover,
+        .modal-close:focus {
+            color: var(--light-gold);
             text-decoration: none;
             cursor: pointer;
         }
 
-        /* Image container styles */
-        .image-container {
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            border-radius: 8px; /* Rounded corners for image containers */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-        }
-
-        .image-container:hover {
-            transform: translateY(-5px); /* Lift effect on hover */
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* More prominent shadow */
-        }
-
-        .image-container img {
-            width: 100%;
-            height: 250px; /* Fixed height for consistency in grid */
-            object-fit: cover; /* Cover the container */
-            border-radius: 8px;
-            border: 3px solid transparent; /* Start with transparent border */
-            transition: border-color 0.2s ease-in-out;
-        }
-
-        .image-container.selected img {
-            border-color: #FFD700; /* Gold border when selected */
-        }
-
-        /* Checkmark icon for selected images */
-        .checkmark-icon {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 24px;
-            color: #FFD700; /* Gold checkmark */
-            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
-            border-radius: 50%;
-            padding: 4px;
-            display: none; /* Hidden by default */
-        }
-
-        .image-container.selected .checkmark-icon {
-            display: block; /* Show when selected */
-        }
-
-        /* Floating download button */
-        .download-button {
+        /* Floating action buttons */
+        .fab-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 999;
-            background-color: #FFD700; /* Gold background */
-            color: #000; /* Black text */
-            padding: 15px 25px;
-            border-radius: 50px; /* Pill shape */
-            font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Shadow */
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .fab {
+            background-color: var(--secondary-gold);
+            color: var(--primary-black);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            font-size: 1.5rem;
             cursor: pointer;
-            border: none;
-            outline: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .download-button:hover {
-            background-color: #e6c200; /* Slightly darker gold on hover */
-            transform: translateY(-3px); /* Lift effect */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        .fab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+            background-color: var(--light-gold);
         }
 
-        .download-button:active {
-            transform: translateY(0); /* Press down effect */
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        .fab:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        /* Ensure download button is hidden if no images are selected */
-        .download-button.hidden {
+        /* Message box for alerts */
+        .message-box {
             display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--secondary-gold);
+            color: var(--primary-black);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            text-align: center;
+            font-weight: bold;
         }
 
-        /* Responsive adjustments for header */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
+        .message-box.show {
+            display: block;
+        }
+
+        /* Responsive grid adjustments */
+        @media (max-width: 640px) {
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
-            .header-content h1 {
-                font-size: 2.25rem; /* Adjust for mobile */
+            .fab {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
             }
-            .header-content p {
-                font-size: 0.9rem;
+            .fab-container {
+                bottom: 15px;
+                right: 15px;
+                gap: 10px;
+            }
+            .modal-close {
+                font-size: 30px;
+                top: 10px;
+                right: 20px;
             }
         }
     </style>
 </head>
-<body class="selection:bg-gold selection:text-black">
+<body class="min-h-screen">
     <!-- Header Section -->
-    <header class="bg-black text-white py-8 px-6 sm:px-10 border-b border-gold shadow-lg">
-        <div class="header-content flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto">
+    <header class="bg-gradient-to-r from-gray-900 to-black p-6 shadow-lg">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
             <div class="text-center sm:text-left mb-4 sm:mb-0">
-                <h1 class="text-4xl sm:text-5xl font-extrabold text-gold leading-tight tracking-wide">
-                    LM Clothing Store
+                <h1 class="text-4xl font-extrabold text-gold-300 tracking-wider">
+                    <span class="text-secondary-gold">LM</span> Clothing Store
                 </h1>
-                <p class="text-lg sm:text-xl mt-2 text-gray-300">
-                    Your destination for premium men's shirts.
+                <p class="text-sm text-gray-400 mt-2">
+                    Men's Shirts - Thailand Complex Building, Shop #03
+                </p>
+                <p class="text-sm text-gray-400">
+                    Mchikichi/Manyema St., Kariakoo Market
                 </p>
             </div>
-            <div class="text-center sm:text-right text-gray-400 text-sm sm:text-base">
-                <p>Thailand Complex Building, Shop No. 03</p>
-                <p>Mchikichi/Manyema St., Kariakoo Market</p>
-                <p>Dar es Salaam, Tanzania</p>
+            <div class="text-center sm:text-right">
+                <p class="text-md font-semibold text-secondary-gold">Connect With Us:</p>
+                <p class="text-gray-400">WhatsApp: +255 763 471 818</p>
             </div>
         </div>
     </header>
 
-    <!-- Main Content - Image Gallery -->
-    <main class="container mx-auto px-4 py-8">
-        <h2 class="text-3xl font-bold text-gold mb-8 text-center">Our Latest Collection</h2>
-
-        <div id="image-gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <!-- Main Content Area - Image Gallery -->
+    <main class="container mx-auto p-6 pt-10">
+        <h2 class="text-3xl font-bold text-secondary-gold mb-8 text-center">Our Latest Collection</h2>
+        <div id="image-grid" class="image-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             <!-- Images will be dynamically loaded here by JavaScript -->
-            <!-- Example Placeholder Image Structure: -->
-            <!--
-            <div class="image-container group relative bg-gray-900 border border-gold rounded-lg shadow-md">
-                <img src="https://placehold.co/400x400/000/FFD700?text=Shirt+1" alt="Men's Shirt 1" class="w-full h-auto object-cover rounded-lg">
-                <i class="checkmark-icon fas fa-check-circle"></i>
-            </div>
-            -->
         </div>
     </main>
 
     <!-- Magnified Image Modal -->
     <div id="image-modal" class="modal">
-        <span class="close-button" id="close-modal">&times;</span>
-        <img class="modal-content" id="magnified-image" src="" alt="Magnified Image">
+        <span class="modal-close" id="modal-close">&times;</span>
+        <img class="modal-content" id="magnified-image">
     </div>
 
-    <!-- Floating Download Button -->
-    <button id="download-selected-button" class="download-button hidden">
-        <i class="fas fa-download"></i> Download Selected (<span id="selected-count">0</span>)
-    </button>
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button id="whatsapp-fab" class="fab" title="Send selected images via WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+        <button id="download-fab" class="fab" title="Download selected images">
+            <i class="fas fa-download"></i>
+        </button>
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="message-box" class="message-box">
+        <p id="message-text"></p>
+    </div>
 
     <script>
-        const imageGallery = document.getElementById('image-gallery');
-        const imageModal = document.getElementById('image-modal');
-        const magnifiedImage = document.getElementById('magnified-image');
-        const closeModalButton = document.getElementById('close-modal');
-        const downloadButton = document.getElementById('download-selected-button');
-        const selectedCountSpan = document.getElementById('selected-count');
+        // Array to store IDs of selected images
+        let selectedImages = [];
+        // Map to store image data (url, name, dimensions) keyed by ID
+        const imageData = new Map();
 
-        let selectedImages = new Set(); // Stores URLs of selected images
-        let longPressTimer; // Timer for long press detection
-        const LONG_PRESS_THRESHOLD = 500; // milliseconds
-
-        // Generate placeholder images (replace with your actual image URLs in a real app)
-        const imageSources = Array.from({ length: 199 }, (_, i) => ({
-            id: `shirt-${i + 1}`,
-            src: `image (${i+1}).jpeg`,
-            alt: `Men's Shirt ${i + 1}`,
-            downloadName: `LM_Shirt_${i + 1}.png`
-        }));
-
-        // Function to render images
-        function renderImages() {
-            imageGallery.innerHTML = ''; // Clear existing images
-            imageSources.forEach(image => {
-                const imgContainer = document.createElement('div');
-                imgContainer.classList.add(
-                    'image-container', 'group', 'relative', 'bg-gray-900', 'border', 'border-gold', 'rounded-lg', 'shadow-md'
-                );
-                imgContainer.dataset.src = image.src; // Store full image source
-                imgContainer.dataset.downloadName = image.downloadName;
-
-                // Check if this image was previously selected
-                if (selectedImages.has(image.src)) {
-                    imgContainer.classList.add('selected');
-                }
-
-                imgContainer.innerHTML = `
-                    <img src="${image.src}" alt="${image.alt}" class="w-full h-auto object-cover rounded-lg">
-                    <i class="checkmark-icon fas fa-check-circle"></i>
-                `;
-                imageGallery.appendChild(imgContainer);
-            });
-            updateDownloadButtonVisibility();
+        // Function to display messages in the custom message box
+        function showMessageBox(message) {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message;
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000); // Hide after 3 seconds
         }
 
-        // --- Image Interaction Logic ---
+        // Function to generate a random dimension for placeholder images
+        function getRandomDimension() {
+            return Math.floor(Math.random() * (1200 - 800 + 1)) + 800; // Between 800 and 1200
+        }
 
-        // Magnify image on double click
-        imageGallery.addEventListener('dblclick', (event) => {
-            const container = event.target.closest('.image-container');
-            if (container) {
-                magnifiedImage.src = container.dataset.src;
-                imageModal.style.display = 'flex'; // Use flex for centering
+        // Function to simulate fetching hundreds of images
+        function fetchImages() {
+            const imageGrid = document.getElementById('image-grid');
+            const numberOfImages = 100; // Simulating hundreds of pictures
+
+            for (let i = 1; i <= numberOfImages; i++) {
+                const width = getRandomDimension();
+                const height = getRandomDimension();
+                // Simulating image names like "image (1).jpeg"
+                const imageName = `image (${i}).jpeg`;
+                const imageUrl = `image (${i}).jpeg`;
+                const imageId = `img-${i}`;
+
+                // Store image data for later use (download/WhatsApp)
+                imageData.set(imageId, {
+                    url: imageUrl,
+                    name: imageName,
+                    width: width,
+                    height: height
+                });
+
+                const imageCard = document.createElement('div');
+                imageCard.id = imageId;
+                imageCard.classList.add('relative', 'group', 'rounded-xl', 'overflow-hidden', 'shadow-lg', 'cursor-pointer', 'transform', 'hover:scale-105', 'transition-all', 'duration-300', 'gold-frame');
+
+                imageCard.innerHTML = `
+                    <img src="${imageUrl}" alt="Men's Shirt ${i}" class="w-full h-48 object-cover rounded-xl group-hover:opacity-90 transition-opacity duration-300">
+                    <div class="selected-checkmark">
+                        <i class="fas fa-check"></i>
+                    </div>
+                `;
+
+                // Event listener for single click (select/deselect)
+                imageCard.addEventListener('click', (event) => {
+                    toggleImageSelection(imageCard);
+                });
+
+                // Event listener for double click (magnify)
+                imageCard.addEventListener('dblclick', () => {
+                    magnifyImage(imageUrl);
+                });
+
+                imageGrid.appendChild(imageCard);
             }
-        });
+        }
 
-        // Close magnified image modal
-        closeModalButton.addEventListener('click', () => {
-            imageModal.style.display = 'none';
+        // Function to toggle image selection
+        function toggleImageSelection(imageCard) {
+            const imageId = imageCard.id;
+            const checkmark = imageCard.querySelector('.selected-checkmark');
+
+            if (selectedImages.includes(imageId)) {
+                // Deselect image
+                selectedImages = selectedImages.filter(id => id !== imageId);
+                imageCard.classList.remove('selected');
+                checkmark.classList.remove('show');
+            } else {
+                // Select image
+                selectedImages.push(imageId);
+                imageCard.classList.add('selected');
+                checkmark.classList.add('show');
+            }
+            console.log("Selected Images:", selectedImages);
+        }
+
+        // Function to magnify image in a modal
+        function magnifyImage(imageUrl) {
+            const modal = document.getElementById('image-modal');
+            const magnifiedImage = document.getElementById('magnified-image');
+
+            magnifiedImage.src = imageUrl;
+            modal.style.display = 'flex'; // Use flex to center
+        }
+
+        // Close modal when close button is clicked
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('image-modal').style.display = 'none';
         });
 
         // Close modal when clicking outside the image
-        imageModal.addEventListener('click', (event) => {
-            if (event.target === imageModal) {
-                imageModal.style.display = 'none';
+        document.getElementById('image-modal').addEventListener('click', (event) => {
+            if (event.target.id === 'image-modal') {
+                document.getElementById('image-modal').style.display = 'none';
             }
         });
 
-        // Toggle selection on long press/hold
-        imageGallery.addEventListener('mousedown', handlePressStart);
-        imageGallery.addEventListener('mouseup', handlePressEnd);
-        imageGallery.addEventListener('mouseleave', handlePressEnd); // Clear timer if mouse leaves element
-        imageGallery.addEventListener('touchstart', handlePressStart, { passive: true });
-        imageGallery.addEventListener('touchend', handlePressEnd);
-        imageGallery.addEventListener('touchcancel', handlePressEnd); // Clear timer if touch is cancelled
-
-        function handlePressStart(event) {
-            const container = event.target.closest('.image-container');
-            if (!container) return;
-
-            // Clear any existing timer to prevent multiple selections
-            clearTimeout(longPressTimer);
-
-            longPressTimer = setTimeout(() => {
-                // This code runs if the press lasts longer than LONG_PRESS_THRESHOLD
-                toggleImageSelection(container);
-            }, LONG_PRESS_THRESHOLD);
-        }
-
-        function handlePressEnd(event) {
-            // This event fires for both short taps/clicks and end of long presses
-            clearTimeout(longPressTimer);
-            // Prevent default behavior to avoid triggering click after a short touch/hold
-            // Only if it was a touch event that didn't trigger long press
-            if (event.type === 'touchend' && !event.target.closest('.image-container').classList.contains('selected')) {
-                 // We don't want to prevent default for touchend after long press if it already did something.
-                 // This is a complex area for touch events. For simplicity, we'll let double-click handle magnify.
-            }
-        }
-
-
-        // Function to toggle image selection
-        function toggleImageSelection(container) {
-            const imgSrc = container.dataset.src;
-            if (selectedImages.has(imgSrc)) {
-                selectedImages.delete(imgSrc);
-                container.classList.remove('selected');
-            } else {
-                selectedImages.add(imgSrc);
-                container.classList.add('selected');
-            }
-            updateDownloadButtonVisibility();
-        }
-
-        // Update the download button's visibility and count
-        function updateDownloadButtonVisibility() {
-            const count = selectedImages.size;
-            selectedCountSpan.textContent = count;
-            if (count > 0) {
-                downloadButton.classList.remove('hidden');
-            } else {
-                downloadButton.classList.add('hidden');
-            }
-        }
-
-        // --- Download Logic ---
-        downloadButton.addEventListener('click', async () => {
-            if (selectedImages.size === 0) {
-                console.log("No images selected for download.");
+        // Handle download functionality
+        document.getElementById('download-fab').addEventListener('click', () => {
+            if (selectedImages.length === 0) {
+                showMessageBox('Please select images to download.');
                 return;
             }
 
-            // Create a temporary link element for downloading
-            const tempLink = document.createElement('a');
-            tempLink.style.display = 'none';
-            document.body.appendChild(tempLink);
+            showMessageBox(`Downloading ${selectedImages.length} images...`);
 
-            for (const imageUrl of selectedImages) {
-                try {
-                    // Find the corresponding image data to get the download name
-                    const imageData = imageSources.find(img => img.src === imageUrl);
-                    const downloadFileName = imageData ? imageData.downloadName : `downloaded_image_${Date.now()}.png`;
-
-                    // Fetch the image as a Blob
-                    const response = await fetch(imageUrl);
-                    const blob = await response.blob();
-
-                    // Create an object URL for the blob
-                    const objectURL = URL.createObjectURL(blob);
-
-                    tempLink.href = objectURL;
-                    tempLink.download = downloadFileName;
-                    tempLink.click(); // Programmatically click the link to trigger download
-
-                    URL.revokeObjectURL(objectURL); // Clean up the object URL
-                } catch (error) {
-                    console.error(`Failed to download image ${imageUrl}:`, error);
-                    // You could display a user-friendly error message here
+            selectedImages.forEach(imageId => {
+                const imgData = imageData.get(imageId);
+                if (imgData) {
+                    const link = document.createElement('a');
+                    link.href = imgData.url;
+                    link.download = imgData.name || 'downloaded_image.png'; // Use original name if available
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                 }
-            }
+            });
 
-            document.body.removeChild(tempLink); // Clean up the temporary link
-
-            // Clear selected images after download
-            selectedImages.clear();
-            renderImages(); // Re-render to update UI and remove checkmarks
+            // Clear selections after download
+            clearSelections();
+            showMessageBox('Download complete!');
         });
 
-        // Initial render of images when the page loads
-        window.onload = renderImages;
+        // Handle WhatsApp share functionality
+        document.getElementById('whatsapp-fab').addEventListener('click', () => {
+            if (selectedImages.length === 0) {
+                showMessageBox('Please select images to send via WhatsApp.');
+                return;
+            }
+
+            const phoneNumber = '255763471818';
+            let message = "Check out these shirts from LM Clothing Store:\n\n";
+
+            selectedImages.forEach((imageId, index) => {
+                const imgData = imageData.get(imageId);
+                if (imgData) {
+                    // Example link format: image (1).jpeg (1022x1280) - [link]
+                    message += `${imgData.name} (${imgData.width}x${imgData.height}) - ${imgData.url}\n`;
+                }
+            });
+
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+
+            // Clear selections after sending
+            clearSelections();
+            showMessageBox('Links sent via WhatsApp!');
+        });
+
+        // Function to clear all selected images
+        function clearSelections() {
+            selectedImages.forEach(imageId => {
+                const imageCard = document.getElementById(imageId);
+                if (imageCard) {
+                    imageCard.classList.remove('selected');
+                    const checkmark = imageCard.querySelector('.selected-checkmark');
+                    if (checkmark) {
+                        checkmark.classList.remove('show');
+                    }
+                }
+            });
+            selectedImages = [];
+        }
+
+        // Initial image loading when the DOM is ready
+        document.addEventListener('DOMContentLoaded', fetchImages);
     </script>
 </body>
 </html>
